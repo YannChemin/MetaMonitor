@@ -1,0 +1,21 @@
+[Desktop Entry]
+Type=Application
+Name=MetaMonitor
+GenericName=Progress Monitor
+Comment=Live progress of Claude Code sessions, CLI jobs, GRASS GIS modules, file copies and applications
+Exec=@BINDIR@/metamonitor
+Icon=io.github.yannchemin.MetaMonitor
+Terminal=false
+Categories=GTK;GNOME;System;Monitor;
+Keywords=progress;claude;grass;gis;rsync;download;monitor;btop;
+StartupNotify=true
+DBusActivatable=false
+Actions=background;guide;
+
+[Desktop Action background]
+Name=Run in Background (Top-Bar Indicator)
+Exec=@BINDIR@/metamonitor --background
+
+[Desktop Action guide]
+Name=How to Feed It from Bash
+Exec=@BINDIR@/metamonitor --guide=bash

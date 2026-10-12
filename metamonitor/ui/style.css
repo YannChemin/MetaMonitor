@@ -1,0 +1,210 @@
+/* MetaMonitor: btop density, Night City neon.
+ * Tokens mirror metamonitor/brand.py.
+ * SPDX-License-Identifier: Unlicense
+ */
+
+@define-color mm_void #07080e;
+@define-color mm_panel #10121c;
+@define-color mm_yellow #fcee0a;
+@define-color mm_cyan #00f0ff;
+@define-color mm_magenta #ff2a6d;
+@define-color mm_red #ff003c;
+@define-color mm_green #39ff88;
+@define-color mm_text #e6f1ff;
+@define-color mm_dim #7a86a8;
+
+/* Recolour libadwaita itself. */
+@define-color accent_color @mm_yellow;
+@define-color accent_bg_color @mm_yellow;
+@define-color accent_fg_color #0b0b0b;
+@define-color window_fg_color @mm_text;
+@define-color popover_bg_color #12141f;
+@define-color dialog_bg_color #0d0f18;
+@define-color card_bg_color alpha(#ffffff, 0.04);
+
+window.mm-window {
+  background-color: @mm_void;
+  background-image:
+    repeating-linear-gradient(to bottom, alpha(#ffffff, 0.018) 0px, alpha(#ffffff, 0.018) 1px,
+                              transparent 1px, transparent 3px),
+    radial-gradient(ellipse at 12% -10%, alpha(@mm_magenta, 0.16) 0%, transparent 45%),
+    radial-gradient(ellipse at 95% 0%, alpha(@mm_cyan, 0.12) 0%, transparent 40%),
+    linear-gradient(to bottom, #0c0e18, @mm_void);
+  color: @mm_text;
+  font-family: "Rajdhani", "Inter", sans-serif;
+  font-weight: 600;
+}
+
+.mm-window headerbar {
+  background: transparent;
+  box-shadow: inset 0 -1px alpha(@mm_cyan, 0.25);
+  min-height: 52px;
+}
+
+.mm-wordmark {
+  font-family: "Orbitron", sans-serif;
+  font-weight: 900;
+  font-size: 17px;
+  letter-spacing: 3px;
+  text-shadow: -1.5px 0 alpha(@mm_red, 0.75), 1.5px 0 alpha(@mm_cyan, 0.75);
+}
+
+.mm-tagline {
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: @mm_dim;
+}
+
+.mm-window headerbar button {
+  border-radius: 0;
+}
+
+.mm-overview {
+  padding: 14px 18px;
+  border-radius: 0;
+  border: 1px solid alpha(@mm_cyan, 0.20);
+  background-color: alpha(@mm_panel, 0.75);
+  background-image: linear-gradient(135deg, @mm_yellow 0px, @mm_yellow 14px, transparent 14px);
+}
+
+.mm-gauge-value {
+  font-family: "Orbitron", sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  font-feature-settings: "tnum";
+}
+
+.mm-gauge-caption {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: @mm_dim;
+}
+
+.mm-chart-legend {
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: @mm_dim;
+}
+
+.mm-group {
+  padding: 12px 16px 6px 16px;
+  border-radius: 0;
+  border: 1px solid alpha(@mm_cyan, 0.16);
+  background-color: alpha(@mm_panel, 0.82);
+  background-image: linear-gradient(135deg, @mm_yellow 0px, @mm_yellow 10px, transparent 10px);
+  box-shadow: 0 10px 30px alpha(#000000, 0.45);
+}
+
+.mm-group-title {
+  font-family: "Orbitron", sans-serif;
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 3px;
+  color: @mm_yellow;
+  text-shadow: 0 0 10px alpha(@mm_yellow, 0.35);
+}
+
+.mm-group-count {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 1px 8px;
+  border-radius: 0;
+  color: @mm_cyan;
+  border: 1px solid alpha(@mm_cyan, 0.35);
+}
+
+.mm-row {
+  padding: 8px 0;
+  border-top: 1px dashed alpha(@mm_cyan, 0.10);
+}
+
+.mm-row.child {
+  padding-left: 26px;
+}
+
+.mm-row.idle, .mm-row.done {
+  opacity: 0.6;
+}
+
+.mm-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.mm-subtitle {
+  font-size: 12px;
+  color: @mm_dim;
+}
+
+.mm-detail {
+  font-family: "JetBrains Mono", "Hack", "DejaVu Sans Mono", monospace;
+  font-weight: 400;
+  font-size: 11px;
+  color: alpha(@mm_cyan, 0.75);
+}
+
+.mm-percent {
+  font-family: "Orbitron", sans-serif;
+  font-size: 17px;
+  font-weight: 800;
+  font-feature-settings: "tnum";
+  min-width: 84px;
+}
+
+.mm-eta {
+  font-family: "JetBrains Mono", "Hack", monospace;
+  font-weight: 400;
+  font-size: 11px;
+  color: @mm_dim;
+  min-width: 70px;
+}
+
+.mm-pill {
+  font-family: "Orbitron", sans-serif;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  padding: 2px 8px;
+  border-radius: 0;
+  border-left: 3px solid;
+}
+.mm-pill.running { background: alpha(@mm_cyan, 0.12);    color: @mm_cyan;    border-color: @mm_cyan; }
+.mm-pill.blocked { background: alpha(@mm_magenta, 0.14); color: @mm_magenta; border-color: @mm_magenta; }
+.mm-pill.paused  { background: alpha(@mm_yellow, 0.12);  color: @mm_yellow;  border-color: @mm_yellow; }
+.mm-pill.idle    { background: alpha(#ffffff, 0.06);     color: @mm_dim;     border-color: @mm_dim; }
+.mm-pill.done    { background: alpha(@mm_green, 0.12);   color: @mm_green;   border-color: @mm_green; }
+.mm-pill.failed  { background: alpha(@mm_red, 0.16);     color: #ff5c7a;     border-color: @mm_red; }
+
+/* Help dialog. */
+.mm-help-code {
+  font-family: "JetBrains Mono", "Hack", monospace;
+  font-weight: 400;
+  font-size: 12px;
+  padding: 10px 12px;
+  border-left: 3px solid @mm_yellow;
+  background-color: alpha(#000000, 0.35);
+  color: @mm_text;
+}
+
+.mm-help-text {
+  font-size: 14px;
+}
+
+.mm-help-heading {
+  font-family: "Orbitron", sans-serif;
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: @mm_yellow;
+}
+
+.mm-group image.mm-group-icon {
+  color: @mm_yellow;
+  -gtk-icon-shadow: 0 0 6px alpha(@mm_yellow, 0.5);
+}
+
+.mm-row image {
+  color: alpha(@mm_cyan, 0.8);
+}

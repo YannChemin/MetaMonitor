@@ -1,0 +1,48 @@
+.TH METAMONITOR 1 "2026-10-12" "MetaMonitor 0.2.1" "User Commands"
+.SH NAME
+metamonitor \- live dashboard of every progress bar on the desktop
+.SH SYNOPSIS
+.B metamonitor
+[\fB\-\-background\fR] [\fB\-\-guide\fR=\fIPAGE\fR]
+.SH DESCRIPTION
+.B metamonitor
+opens a GTK window showing Claude Code sessions and their background
+commands, slots written by
+.BR mmrun (1)
+and
+.BR mmctl (1),
+file-crunching commands found in /proc (cp, dd, tar, rsync, gzip,
+sha256sum, gdal_translate...) and applications broadcasting
+com.canonical.Unity.LauncherEntry progress on the session bus.
+GRASS GIS sessions are found from mapset \fI.gislock\fR files and from
+processes carrying \fBGISRC\fR; stale locks are flagged.
+.PP
+On first start it adds two hooks, which can be turned off in the menu or with
+.BR mmctl (1):
+a block in \fI~/.bashrc\fR wrapping progress-printing commands, and an
+\fBLD_PRELOAD\fR line in \fI~/.grass8/bashrc\fR that makes every GRASS
+module report its G_percent() progress.
+.SH OPTIONS
+.TP
+.BR \-b ", " \-\-background
+Collect progress without a window, for the GNOME Shell top-bar extension
+(metamonitor@yannchemin.github.io).
+.TP
+.BR \-g ", " \-\-guide =\fIPAGE\fR
+Open the help on \fIPAGE\fR: bash, grass, python, claude or formats.
+.SH ENVIRONMENT
+.TP
+.B METAMONITOR_SPOOL
+Slot directory (default \fI$XDG_RUNTIME_DIR/metamonitor/slots\fR).
+.TP
+.B METAMONITOR_PROC_COMMANDS
+Extra command names to watch in /proc, separated by spaces or commas.
+.TP
+.B METAMONITOR_GRASS_DBASES
+Extra GRASS database directories to scan for \fI.gislock\fR, colon separated.
+.TP
+.B CLAUDE_CONFIG_DIR
+Claude Code state directory (default \fI~/.claude\fR).
+.SH SEE ALSO
+.BR mmctl (1),
+.BR mmrun (1)

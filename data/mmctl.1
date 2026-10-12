@@ -1,0 +1,71 @@
+.TH MMCTL 1 "2026-10-12" "MetaMonitor 0.2.1" "User Commands"
+.SH NAME
+mmctl \- publish and manage MetaMonitor progress slots
+.SH SYNOPSIS
+.B mmctl set
+\fIID\fR [\fIPERCENT\fR] [\fB\-n\fR \fINAME\fR] [\fB\-d\fR \fIDETAIL\fR]
+[\fB\-s\fR \fISTATE\fR] [\fB\-\-pid\fR \fIPID\fR] [\fB\-\-of\fR \fITOTAL\fR]
+.br
+.B mmctl done\fR|\fBfail\fR|\fBpause
+\fIID\fR [\fB\-d\fR \fIDETAIL\fR]
+.br
+.B mmctl pipe
+\fIID\fR [\fB\-n\fR \fINAME\fR] [\fB\-q\fR] [\fB\-N\fR]
+.br
+.B mmctl tail
+\fIID FILE\fR [\fB\-\-pid\fR \fIPID\fR] [\fB\-\-from\-start\fR] [\fB\-q\fR]
+.br
+.B mmctl bash\fR|\fBgrass status\fR|\fBenable\fR|\fBdisable
+.br
+.B mmctl rm \fIID\fR... | \fBclear\fR | \fBlist\fR | \fBpath\fR | \fBshell\-init\fR [\fICOMMAND\fR...]
+.SH DESCRIPTION
+Each slot is one file in the spool directory, holding either a bare
+percentage or a JSON object with \fBname\fR, \fBpercent\fR, \fBstate\fR,
+\fBdetail\fR and \fBpid\fR.
+.TP
+.B set
+Create or update a slot. Without \fIPERCENT\fR the slot is indeterminate.
+With \fB\-\-of\fR, \fIPERCENT\fR is a count out of \fITOTAL\fR.
+With \fB\-\-pid\fR, the slot fails if that process dies first.
+.TP
+.B pipe
+Read standard input, echo it unless \fB\-q\fR, and parse its progress.
+With \fB\-N\fR, a line holding only a number is a percentage
+(\fBpv \-n\fR, dialog gauges).
+.TP
+.B tail
+Follow a growing log file; stop when \fIPID\fR exits.
+.TP
+.B shell\-init
+Print shell functions that run the given commands (default: rsync, wget,
+gdal_translate, gdalwarp, ogr2ogr, pip, rclone...) through
+.BR mmrun (1)
+when their output is a terminal. Use with
+\fBeval "$(mmctl shell\-init)"\fR in \fI~/.bashrc\fR.
+.TP
+.B bash
+Manage the \fI~/.bashrc\fR (and \fI~/.zshrc\fR) block that evaluates
+\fBmmctl shell\-init\fR.
+.TP
+.B grass
+Manage the \fBLD_PRELOAD\fR line in \fI~/.grass8/bashrc\fR that loads
+\fIlibmmgrass.so\fR into GRASS sessions.
+.SH EXAMPLES
+.nf
+files=(*.tif); n=${#files[@]}; i=0
+for f in "${files[@]}"; do
+    gdalwarp \-q \-t_srs EPSG:32640 "$f" "out/$f"
+    mmctl set batch $((++i)) \-\-of "$n" \-n "Reproject" \-d "$f"
+done
+mmctl done batch
+.fi
+.SH ENVIRONMENT
+.TP
+.B METAMONITOR_SPOOL
+Slot directory (default \fI$XDG_RUNTIME_DIR/metamonitor/slots\fR).
+.TP
+.B METAMONITOR_WRAP
+Default command list for \fBshell\-init\fR.
+.SH SEE ALSO
+.BR metamonitor (1),
+.BR mmrun (1)

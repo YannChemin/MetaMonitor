@@ -1,0 +1,29 @@
+metamonitor (0.2.1) unstable; urgency=medium
+
+  * tests/shell/run_nested_shell.sh and "make shell-test": smoke test of the
+    top-bar extension in a headless gnome-shell on a private D-Bus session.
+    gnome-shell spawns its own ibus-daemon there, which was orphaned when the
+    test shell exited and then spun at ~35 % CPU, growing by gigabytes of
+    RAM. The test now puts a no-op ibus-daemon first on PATH and kills every
+    process left on its private bus.
+
+ -- Yann Chemin <dr.yann.chemin@gmail.com>  Mon, 12 Oct 2026 15:01:00 +0200
+
+metamonitor (0.2.0) unstable; urgency=medium
+
+  * GRASS GIS: sessions from .gislock files and GISRC processes, stale lock
+    warnings, exact module progress through the libmmgrass G_percent() shim
+    preloaded from ~/.grass8/bashrc (on by default).
+  * Shell hook in ~/.bashrc wrapping progress-printing CLIs (on by default).
+  * Help dialog with Bash, GRASS GIS, Python, Claude Code and format guides.
+  * Brand identity: icon, symbolic icons, bundled Orbitron and Rajdhani
+    fonts, neon HUD widgets, GNOME Shell top-bar extension, background mode.
+  * mmctl pipe -N for bare-number progress (pv -n, dialog gauges).
+
+ -- Yann Chemin <dr.yann.chemin@gmail.com>  Mon, 12 Oct 2026 15:00:00 +0200
+
+metamonitor (0.1.0) unstable; urgency=medium
+
+  * Initial release.
+
+ -- Yann Chemin <dr.yann.chemin@gmail.com>  Mon, 12 Oct 2026 13:30:00 +0200

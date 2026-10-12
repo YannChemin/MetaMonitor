@@ -1,0 +1,8 @@
+{
+  "uuid": "metamonitor@yannchemin.github.io",
+  "name": "MetaMonitor",
+  "description": "Top-bar meter for MetaMonitor: active Claude Code sessions, CLI jobs, GRASS GIS modules and file copies, with their progress.",
+  "shell-version": ["46", "47", "48", "49"],
+  "url": "https://github.com/YannChemin/MetaMonitor",
+  "version-name": "0.2.1"
+}

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- MetaMonitor application icon. SPDX-License-Identifier: Unlicense -->
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="plate" x1="0" y1="0" x2="0.35" y2="1">
+      <stop offset="0" stop-color="#1c2033"/>
+      <stop offset="1" stop-color="#07080e"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#000000"/>
+      <stop offset="1" stop-color="#05060a"/>
+    </linearGradient>
+    <linearGradient id="cyan" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#00f0ff"/>
+      <stop offset="1" stop-color="#2f6bff"/>
+    </linearGradient>
+    <linearGradient id="magenta" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ff2a6d"/>
+      <stop offset="1" stop-color="#b026ff"/>
+    </linearGradient>
+    <linearGradient id="yellow" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fcee0a"/>
+      <stop offset="1" stop-color="#ff9f1c"/>
+    </linearGradient>
+    <!-- btop-style block segments: 5 px block, 2 px gap. -->
+    <pattern id="segments" width="7" height="16" patternUnits="userSpaceOnUse" x="24">
+      <rect width="5" height="16" fill="#ffffff"/>
+    </pattern>
+    <mask id="seg">
+      <rect x="0" y="0" width="128" height="128" fill="url(#segments)"/>
+    </mask>
+    <filter id="glow" x="-20%" y="-60%" width="140%" height="220%">
+      <feGaussianBlur stdDeviation="2.6"/>
+    </filter>
+    <pattern id="scan" width="4" height="3" patternUnits="userSpaceOnUse">
+      <rect width="4" height="1" fill="#ffffff" fill-opacity="0.035"/>
+    </pattern>
+    <clipPath id="plateclip">
+      <path d="M30 10 H118 V96 L96 118 H10 V30 Z"/>
+    </clipPath>
+  </defs>
+
+  <!-- Plate with a darker lower edge (GNOME icon depth). -->
+  <path d="M30 14 H118 V100 L96 122 H10 V34 Z" fill="url(#edge)"/>
+  <path d="M30 10 H118 V96 L96 118 H10 V30 Z" fill="url(#plate)"/>
+  <path d="M30 10 H118 V96 L96 118 H10 V30 Z" fill="url(#scan)"/>
+  <path d="M30 10.75 H117.25 V95.7 L95.7 117.25 H10.75 V30.3 Z" fill="none"
+        stroke="#ffffff" stroke-opacity="0.09" stroke-width="1.5"/>
+
+  <!-- Cut-corner accent and hazard ticks. -->
+  <path d="M10 30 L30 10 H40 L10 40 Z" fill="#fcee0a"/>
+  <g fill="#fcee0a" fill-opacity="0.85">
+    <path d="M98 18 h5 l-4 6 h-5 z"/>
+    <path d="M105 18 h5 l-4 6 h-5 z"/>
+    <path d="M112 18 h3 v1.5 l-3 4.5 h-5 z"/>
+  </g>
+  <rect x="44" y="20" width="34" height="2" fill="#00f0ff" fill-opacity="0.55"/>
+
+  <g clip-path="url(#plateclip)">
+    <!-- Meter tracks. -->
+    <g fill="#ffffff" fill-opacity="0.07">
+      <path d="M24 36 H104 L100 48 H20 Z"/>
+      <path d="M24 60 H104 L100 72 H20 Z"/>
+      <path d="M24 84 H104 L100 96 H20 Z"/>
+    </g>
+
+    <!-- Glow under the fills. -->
+    <g filter="url(#glow)" opacity="0.9">
+      <path d="M24 36 H94 L90 48 H20 Z" fill="#00f0ff"/>
+      <path d="M24 60 H72 L68 72 H20 Z" fill="#ff2a6d"/>
+      <path d="M24 84 H52 L48 96 H20 Z" fill="#fcee0a"/>
+    </g>
+
+    <!-- Segmented fills. -->
+    <g mask="url(#seg)">
+      <path d="M24 36 H94 L90 48 H20 Z" fill="url(#cyan)"/>
+      <path d="M24 60 H72 L68 72 H20 Z" fill="url(#magenta)"/>
+      <path d="M24 84 H52 L48 96 H20 Z" fill="url(#yellow)"/>
+    </g>
+
+    <!-- Glitch slices: chromatic offset of thin bands. -->
+    <path d="M44 64 H70 L69.4 66 H43.4 Z" fill="#00f0ff" fill-opacity="0.7"/>
+    <path d="M14 41 H40 L39.3 43 H13.3 Z" fill="#ff003c" fill-opacity="0.8"/>
+    <path d="M60 88.5 H84 L83.4 90.3 H59.4 Z" fill="#00f0ff" fill-opacity="0.55"/>
+  </g>
+</svg>

@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Build output
+grass/libmmgrass.so
+*.o
+
+# Debian packaging intermediates (dpkg-buildpackage)
+debian/.debhelper/
+debian/metamonitor/
+debian/files
+debian/debhelper-build-stamp
+debian/*.debhelper
+debian/*.debhelper.log
+debian/*.substvars
+
+# Build records in dist/; the .deb packages stay tracked for the README install
+dist/*.buildinfo
+dist/*.changes
+dist/*-dbgsym_*.deb

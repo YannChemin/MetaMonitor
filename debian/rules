@@ -1,0 +1,24 @@
+#!/usr/bin/make -f
+# SPDX-License-Identifier: Unlicense
+
+export PYBUILD_NAME = metamonitor
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+DPKG_EXPORT_BUILDFLAGS = 1
+include /usr/share/dpkg/buildflags.mk
+
+%:
+	dh $@ --with python3
+
+override_dh_auto_build:
+	$(MAKE) all
+
+override_dh_auto_install:
+	$(MAKE) install PREFIX=/usr DESTDIR=$(CURDIR)/debian/metamonitor
+
+override_dh_auto_test:
+ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
+	python3 -m pytest -q -p no:cacheprovider tests
+endif
+
+override_dh_python3:
+	dh_python3 /usr/share/metamonitor

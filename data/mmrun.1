@@ -1,0 +1,24 @@
+.TH MMRUN 1 "2026-10-12" "MetaMonitor 0.2.1" "User Commands"
+.SH NAME
+mmrun \- run a command and publish the progress it prints to MetaMonitor
+.SH SYNOPSIS
+.B mmrun
+[\fB\-n\fR \fINAME\fR] [\fB\-\-id\fR \fIID\fR] [\fB\-\-\fR] \fICOMMAND\fR [\fIARGS\fR...]
+.SH DESCRIPTION
+Runs \fICOMMAND\fR on a pseudo-terminal, mirroring its output unchanged,
+and parses it for progress: OSC 9;4 sequences, percentages, GRASS
+GRASS_INFO_PERCENT, GDAL dotted counters and N/M counters.
+The slot ends \fBdone\fR on exit status 0 and \fBfailed\fR otherwise.
+The exit status of \fBmmrun\fR is that of \fICOMMAND\fR.
+.SH OPTIONS
+.TP
+.BR \-n ", " \-\-name " " \fINAME\fR
+Label shown in MetaMonitor (default: the command line).
+.TP
+.BR \-\-id " " \fIID\fR
+Slot identifier (default: command name and pid).
+.SH EXAMPLES
+mmrun \-n "Sync rasters" \-\- rsync \-a \-\-info=progress2 src/ dst/
+.SH SEE ALSO
+.BR metamonitor (1),
+.BR mmctl (1)

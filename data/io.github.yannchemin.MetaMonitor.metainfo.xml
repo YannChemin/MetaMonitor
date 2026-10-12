@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: Unlicense -->
+<component type="desktop-application">
+  <id>io.github.yannchemin.MetaMonitor</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>Unlicense</project_license>
+  <name>MetaMonitor</name>
+  <summary>Every progress bar on the desktop in one live dashboard</summary>
+  <description>
+    <p>
+      MetaMonitor gathers the progress of Claude Code sessions and their
+      background commands, wrapped or piped command-line jobs, file copies
+      and desktop applications into one GPU-drawn GTK window.
+    </p>
+    <p>
+      Any command enrols with mmrun, mmctl pipe or mmctl tail, or by writing
+      a percentage into a slot file; known file-crunching commands and
+      Claude Code sessions are picked up with no setup at all.
+    </p>
+    <p>
+      GRASS GIS sessions are found from their mapset locks, and every module
+      reports its exact progress through a small preloaded library. A GNOME
+      Shell extension puts a neon meter in the top bar.
+    </p>
+  </description>
+  <launchable type="desktop-id">io.github.yannchemin.MetaMonitor.desktop</launchable>
+  <developer id="io.github.yannchemin">
+    <name>Yann Chemin</name>
+  </developer>
+  <url type="homepage">https://github.com/YannChemin/MetaMonitor</url>
+  <content_rating type="oars-1.1"/>
+  <branding>
+    <color type="primary" scheme_preference="light">#fcee0a</color>
+    <color type="primary" scheme_preference="dark">#07080e</color>
+  </branding>
+  <releases>
+    <release version="0.2.1" date="2026-10-12">
+      <description>
+        <p>Headless GNOME Shell test for the top-bar extension that no longer
+        leaves an orphaned ibus-daemon behind.</p>
+      </description>
+    </release>
+    <release version="0.2.0" date="2026-10-12">
+      <description>
+        <p>GRASS GIS sessions and module progress, ~/.bashrc auto-enrolment,
+        help guides, top-bar extension and the neon brand identity.</p>
+      </description>
+    </release>
+    <release version="0.1.0" date="2026-10-12"/>
+  </releases>
+</component>

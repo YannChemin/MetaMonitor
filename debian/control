@@ -1,0 +1,38 @@
+Source: metamonitor
+Section: utils
+Priority: optional
+Maintainer: Yann Chemin <dr.yann.chemin@gmail.com>
+Build-Depends: debhelper-compat (= 13),
+               dh-python,
+               python3:any,
+               python3-pytest <!nocheck>,
+Standards-Version: 4.7.2
+Homepage: https://github.com/YannChemin/MetaMonitor
+Rules-Requires-Root: no
+
+Package: metamonitor
+Architecture: any
+Depends: ${misc:Depends},
+         ${shlibs:Depends},
+         ${python3:Depends},
+         python3-gi,
+         gir1.2-gtk-4.0 (>= 4.14),
+         gir1.2-adw-1 (>= 1.5),
+         libgtk-4-1 (>= 4.14),
+Recommends: adwaita-icon-theme,
+            fonts-jetbrains-mono,
+Suggests: grass-core,
+          gnome-shell-extension-prefs
+Description: live dashboard of every progress bar on the desktop
+ MetaMonitor is a GTK 4 / libadwaita window that gathers progress from
+ many sources into one GPU-drawn dashboard:
+  - Claude Code sessions, their background commands and jobs;
+  - any command run through mmrun, piped into mmctl pipe or followed with
+    mmctl tail (percentages, OSC 9;4, GRASS, GDAL and N/M counters);
+  - scripts writing a percentage into a slot file with mmctl set;
+  - cp, dd, tar, rsync, gzip, sha256sum and similar commands, read from
+    /proc with no setup;
+  - applications broadcasting Unity LauncherEntry progress over D-Bus;
+  - GRASS GIS sessions found from mapset .gislock files, with exact module
+    progress from a small G_percent() shim preloaded through the GRASS env
+    file, and stale locks flagged.
