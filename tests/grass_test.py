@@ -147,9 +147,11 @@ def test_real_grass_session(built, tmp_path):
     (cfg / "bashrc").write_text(f"export LD_PRELOAD={shim}\n")
     spool = tmp_path / "spool"
     env = dict(os.environ, GRASS_CONFIG_DIR=str(cfg.parent), METAMONITOR_SPOOL=str(spool))
+    # Big enough to outlast the shim's 1 s first-slot delay on an idle
+    # machine (6000 x 6000 took 0.8 s, 9000 x 9000 takes 1.7 s).
     subprocess.run(
         ["grass", "--tmp-project", "XY", "--exec", "bash", "-c",
-         "g.region rows=6000 cols=6000 && r.surf.random output=r min=0 max=1 --quiet"],
+         "g.region rows=9000 cols=9000 && r.surf.random output=r min=0 max=1 --quiet"],
         env=env, check=True, capture_output=True,
     )
     slots = [json.loads(p.read_text()) for p in spool.glob("grass-*")]

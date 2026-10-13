@@ -83,9 +83,18 @@ class TaskRow(Gtk.Box):
         self.bar.set_progress(None if t.percent is None else t.percent / 100.0, t.state)
 
 
+# Two card columns: the usually short job cards stacked on the left, the long
+# Claude list on the right. A narrow window stacks the left column on top.
+LEFT_CARDS = ["cli", "grass"] + [g for g in GROUPS if g not in ("cli", "grass", "claude")]
+RIGHT_CARDS = ["claude"]
+
+
 class GroupCard(Gtk.Box):
     def __init__(self, key):
-        super().__init__(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+        # Top-aligned so that a card keeps its own height instead of
+        # stretching to fill its column.
+        super().__init__(orientation=Gtk.Orientation.VERTICAL, spacing=2,
+                         valign=Gtk.Align.START)
         self.add_css_class("mm-group")
         title, icon, c0, _ = GROUPS[key]
         head = Gtk.Box(spacing=8, margin_bottom=6)
@@ -163,11 +172,15 @@ class MainWindow(Adw.ApplicationWindow):
         for w in (self.g_active, self.g_mean, self.g_done, chart_box):
             overview.append(w)
 
-        self.flow = Gtk.FlowBox(
-            selection_mode=Gtk.SelectionMode.NONE, homogeneous=False,
-            max_children_per_line=2, min_children_per_line=2,
-            column_spacing=14, row_spacing=14, valign=Gtk.Align.START,
-        )
+        self.left = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14,
+                            hexpand=True)
+        self.right = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14,
+                             hexpand=True)
+        # Homogeneous: equal column widths, and a lone visible column (the
+        # other one hidden) takes the full width.
+        self.columns = Gtk.Box(spacing=14, homogeneous=True, valign=Gtk.Align.START)
+        self.columns.append(self.left)
+        self.columns.append(self.right)
         self.empty = Adw.StatusPage(
             icon_name="emblem-synchronizing-symbolic",
             title="Nothing in progress",
@@ -184,7 +197,7 @@ class MainWindow(Adw.ApplicationWindow):
         body = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16,
                        margin_start=16, margin_end=16, margin_bottom=16)
         body.append(overview)
-        body.append(self.flow)
+        body.append(self.columns)
         body.append(self.empty)
         clamp = Adw.Clamp(maximum_size=1600, tightening_threshold=1200, child=body)
         scroll = Gtk.ScrolledWindow(child=clamp, vexpand=True)
@@ -197,8 +210,8 @@ class MainWindow(Adw.ApplicationWindow):
         self.set_content(self.toasts)
         # Two card columns when wide, one when narrow (labels ellipsize).
         narrow = Adw.Breakpoint.new(Adw.BreakpointCondition.parse("max-width: 900sp"))
-        narrow.add_setter(self.flow, "min-children-per-line", 1)
-        narrow.add_setter(self.flow, "max-children-per-line", 1)
+        narrow.add_setter(self.columns, "orientation", Gtk.Orientation.VERTICAL)
+        narrow.add_setter(self.columns, "homogeneous", False)
         self.add_breakpoint(narrow)
         self.set_size_request(360, 400)
 
@@ -230,8 +243,12 @@ class MainWindow(Adw.ApplicationWindow):
         card = self.cards.get(group)
         if card is None:
             card = self.cards[group] = GroupCard(group)
-            self.flow.append(card)
-            self._order_cards()
+            column, order = ((self.right, RIGHT_CARDS) if group in RIGHT_CARDS
+                             else (self.left, LEFT_CARDS))
+            prev = None
+            for g in order[:order.index(group)]:
+                prev = self.cards.get(g, prev)
+            column.insert_child_after(card, prev)
         return card
 
     def _on_store(self, added, changed, removed):
@@ -279,23 +296,14 @@ class MainWindow(Adw.ApplicationWindow):
                 prev = row
             active = sum(1 for t in members if t.state in ACTIVE)
             card.count.set_label(f"{active} active · {len(members)}")
-            card.get_parent().set_visible(shown > 0)
-        self._order_cards()
-        any_visible = any(c.get_parent().get_visible() for c in self.cards.values())
-        self.flow.set_visible(any_visible)
+            card.set_visible(shown > 0)
+        for column, order in ((self.left, LEFT_CARDS), (self.right, RIGHT_CARDS)):
+            column.set_visible(any(
+                self.cards[g].get_visible() for g in order if g in self.cards
+            ))
+        any_visible = self.left.get_visible() or self.right.get_visible()
+        self.columns.set_visible(any_visible)
         self.empty.set_visible(not any_visible)
-
-    def _order_cards(self):
-        order = list(GROUPS)
-        self.flow.set_sort_func(
-            lambda a, b: order.index(self._group_of(a)) - order.index(self._group_of(b))
-        )
-
-    def _group_of(self, child):
-        for k, c in self.cards.items():
-            if c.get_parent() is child:
-                return k
-        return next(iter(GROUPS))
 
     def _on_show_idle(self, action, value):
         action.set_state(value)
