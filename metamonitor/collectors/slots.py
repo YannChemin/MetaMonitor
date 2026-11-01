@@ -23,7 +23,11 @@ class SlotCollector:
             state = s["state"]
             pid = s.get("pid")
             detail = s.get("detail") or ""
-            if state in ("running", "paused", "blocked") and pid and not spool.pid_alive(pid):
+            # The PID was ours when the slot was last written; one that
+            # started later was reused by another process after ours died.
+            if state in ("running", "paused", "blocked") and pid and not spool.same_process(
+                pid, seen_at=s["updated"]
+            ):
                 if (s.get("percent") or 0) >= 100:
                     # Reached the end without saying so (gs.percent scripts).
                     state = "done"

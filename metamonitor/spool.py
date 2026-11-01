@@ -123,6 +123,29 @@ def remove_slot(sid):
         return False
 
 
+def sweep_finished(older_than=0.0):
+    """Delete the slot files of tasks that are done or failed.
+
+    The dashboard sweeps them when it closes, and again every so often during
+    a long session, so that a day of finished work does not sit in the spool
+    waiting for a collector to notice it.
+
+    :param older_than: keep a slot that finished less than this many seconds
+        ago; 0 removes every finished slot, including those still on screen
+    :return: the number of slots removed
+    """
+    now = time.time()
+    removed = 0
+    for slot in list_slots():
+        if slot["state"] not in ("done", "failed"):
+            continue
+        if now - slot.get("finished", slot["updated"]) < older_than:
+            continue
+        if remove_slot(slot["id"]):
+            removed += 1
+    return removed
+
+
 def pid_alive(pid):
     try:
         os.kill(int(pid), 0)
@@ -130,4 +153,51 @@ def pid_alive(pid):
         return False
     except (PermissionError, TypeError, ValueError):
         return True
+    return True
+
+
+def proc_start_ticks(pid):
+    """Start time of ``pid`` in clock ticks since boot (``/proc/<pid>/stat``
+    field 22), or None when the process is gone or unreadable."""
+    try:
+        with open(f"/proc/{int(pid)}/stat", "rb") as fh:
+            stat = fh.read()
+        # The command name (field 2) may hold spaces and parentheses.
+        return int(stat[stat.rindex(b")") + 2:].split()[19])
+    except (OSError, ValueError, TypeError, IndexError):
+        return None
+
+
+def proc_started(pid):
+    """Start time of ``pid`` in epoch seconds, or None when it is gone."""
+    ticks = proc_start_ticks(pid)
+    if ticks is None:
+        return None
+    try:
+        with open("/proc/stat") as fh:
+            btime = next(int(line.split()[1]) for line in fh if line.startswith("btime "))
+    except (OSError, StopIteration, ValueError):
+        return None
+    return btime + ticks / os.sysconf("SC_CLK_TCK")
+
+
+def same_process(pid, proc_start=None, seen_at=None):
+    """True when ``pid`` still runs the process we were told about.
+
+    A bare PID can be reused by an unrelated process after a crash, which
+    would keep a dead task looking alive. ``proc_start`` (start ticks, as
+    Claude Code records it) is checked exactly. ``seen_at`` is a time (epoch
+    seconds) when the PID was known to be ours, such as the last write of the
+    file that names it: a process that began after it is somebody else.
+    """
+    if not pid_alive(pid):
+        return False
+    if proc_start not in (None, ""):
+        ticks = proc_start_ticks(pid)
+        if ticks is not None and str(ticks) != str(proc_start):
+            return False
+    if seen_at:
+        began = proc_started(pid)
+        if began is not None and began > seen_at + 2:
+            return False
     return True

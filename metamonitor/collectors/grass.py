@@ -147,7 +147,9 @@ class GrassCollector:
         live_locks = {}
         stale = []
         for lock, pid, mtime in self.locks:
-            if pid and spool.pid_alive(pid):
+            # The owner wrote the lock, so it already ran at the lock's mtime;
+            # a later process with that PID means the owner died long ago.
+            if pid and spool.same_process(pid, seen_at=mtime):
                 live_locks[str(pid)] = lock
             else:
                 stale.append((lock, pid, mtime))

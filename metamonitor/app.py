@@ -20,11 +20,13 @@ from . import APP_ID, __version__, bashrc, brand, grass, spool  # noqa: E402
 from .collectors.claude import ClaudeCollector  # noqa: E402
 from .collectors.grass import GrassCollector  # noqa: E402
 from .collectors.procfs import ProcCollector  # noqa: E402
-from .collectors.slots import SlotCollector  # noqa: E402
+from .collectors.slots import LINGER, SlotCollector  # noqa: E402
 from .collectors.unity import UnityCollector  # noqa: E402
 from .model import ACTIVE, GROUPS, Store  # noqa: E402
 
 NOTIFY_MIN_RUNTIME = 60  # Only notify for tasks that ran at least this long.
+SWEEP_AFTER = 3600  # Sweep finished slots only once a session has run this long.
+SWEEP_EVERY = 900  # Then sweep this often, while the session continues.
 
 
 class MetaMonitor(Adw.Application):
@@ -48,6 +50,8 @@ class MetaMonitor(Adw.Application):
         self.window = None
         self._tick = 0
         self._spool_monitor = None
+        self._session_start = time.monotonic()
+        self._last_sweep = None
 
     def do_startup(self):
         Adw.Application.do_startup(self)
@@ -168,7 +172,34 @@ class MetaMonitor(Adw.Application):
                 self._poll_one(collector)
         if self._tick % 2 == 0:
             self._write_summary()
+        if self._tick % 20 == 0:
+            self._sweep_periodically()
         return True
+
+    def _sweep_periodically(self):
+        """Clear finished slots during a long session.
+
+        Nothing is swept in the first hour: a short session leaves the spool
+        alone, as it always did. After that the sweep runs every quarter of an
+        hour, and only on slots the dashboard has already stopped showing, so
+        nothing disappears from under the user.
+        """
+        now = time.monotonic()
+        if now - self._session_start < SWEEP_AFTER:
+            return
+        if self._last_sweep is not None and now - self._last_sweep < SWEEP_EVERY:
+            return
+        self._last_sweep = now
+        if self.sweep_finished(older_than=LINGER):
+            self._poll_one(self.collectors[0][0])
+
+    def sweep_finished(self, older_than=0.0):
+        """Remove finished slot files, reporting what went wrong if any did."""
+        try:
+            return spool.sweep_finished(older_than)
+        except OSError:
+            traceback.print_exc()
+            return 0
 
     def _write_summary(self):
         """Publish a digest for the GNOME Shell top-bar indicator."""
@@ -274,10 +305,14 @@ class MetaMonitor(Adw.Application):
         help_dialog(param.get_string()).present(self.window)
 
     def _clear(self, *_):
-        for s in spool.list_slots():
-            if s["state"] in ("done", "failed"):
-                spool.remove_slot(s["id"])
+        self.sweep_finished()
         self._poll(force=True)
+
+    def do_shutdown(self):
+        # Closing clears what has finished, so the next session starts on the
+        # work that is actually live.
+        self.sweep_finished()
+        Adw.Application.do_shutdown(self)
 
     def _about(self, *_):
         about = Adw.AboutDialog(

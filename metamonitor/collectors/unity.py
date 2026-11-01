@@ -16,6 +16,7 @@ from gi.repository import Gio
 from ..model import Task
 
 EXPIRE = 30  # Seconds without update before an app entry is considered gone.
+FORGET = 3600  # Seconds before such an entry is dropped from memory.
 
 
 class UnityCollector:
@@ -51,8 +52,11 @@ class UnityCollector:
         now = time.time()
         out = []
         for desktop_id, e in list(self.entries.items()):
-            if not e["visible"] or now - e.get("updated", 0) > EXPIRE:
-                if not e["visible"]:
+            age = now - e.get("updated", 0)
+            if not e["visible"] or age > EXPIRE:
+                # An app that quit or crashed mid-progress never sends the
+                # update that hides its bar: forget it after FORGET.
+                if not e["visible"] or age > FORGET:
                     del self.entries[desktop_id]
                 continue
             name, icon = desktop_id, "application-x-executable-symbolic"

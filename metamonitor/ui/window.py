@@ -221,8 +221,15 @@ class MainWindow(Adw.ApplicationWindow):
         GLib.timeout_add(1000, self._sample)
 
     def _on_close(self, *_):
+        app = self.get_application()
+        # Closing clears what has finished, here as well as in the
+        # application's shutdown: with "Keep running when closed" the window
+        # only hides and that shutdown never comes.
+        sweep = getattr(app, "sweep_finished", None)
+        if sweep is not None:
+            sweep()
         # Kept running for the top-bar indicator: hide instead of quitting.
-        if getattr(self.get_application(), "_held", False):
+        if getattr(app, "_held", False):
             self.set_visible(False)
             return True
         return False

@@ -7,7 +7,9 @@ Sources, all written by Claude Code itself (nothing to install):
 * ``~/.claude/projects/*/<sessionId>.jsonl``: the transcript, read
   incrementally, for the current tool call, the last prompt, the session
   title and the task list (``task_reminder`` attachments);
-* ``~/.claude/jobs/<id>/state.json``: background/daemon sessions;
+* ``~/.claude/jobs/<id>/state.json``: background/daemon sessions, alive only
+  while ``~/.claude/daemon/roster.json`` lists a running worker for them
+  (``state.json`` keeps its last state when the daemon dies);
 * ``/tmp/claude-<uid>/*/<sessionId>/tasks/*.output``: output of
   ``run_in_background`` shell commands, parsed for percentages like any CLI.
 
@@ -32,6 +34,8 @@ EXIT_RE = re.compile(rb"\[(?:exited with code (-?\d+)|(killed))\]\s*$")
 TASK_LINGER = 120
 TASK_MAX_AGE = 6 * 3600
 JOB_LINGER = 1800
+JOB_GRACE = 60  # A new job may appear before the daemon lists its worker.
+TOOL_MEMORY = 512  # Tool calls remembered per transcript, to name bg shells.
 
 RUNNING = {"busy", "running", "shell", "compacting", "thinking", "working", "tool"}
 BLOCKED = {"blocked", "permission", "waiting_permission", "needs_input", "awaiting_input"}
@@ -127,6 +131,10 @@ class Transcript:
                 if isinstance(block, dict) and block.get("type") == "tool_use":
                     desc = _describe_tool(block.get("name", "tool"), block.get("input"))
                     self.tools[block.get("id")] = desc
+                    if len(self.tools) > TOOL_MEMORY:
+                        # Dicts keep insertion order: drop the oldest calls.
+                        for key in list(self.tools)[: len(self.tools) - TOOL_MEMORY]:
+                            del self.tools[key]
                     self.activity = desc
                     self.activity_at = _ts(rec.get("timestamp"))
                     self.turn_tools += 1
@@ -152,6 +160,9 @@ class Transcript:
                 for key, val in res.items():
                     if key.lower().endswith("id") and isinstance(val, str) and len(val) < 40:
                         self.bg_names.setdefault(val, self.tools.get(tuid, ""))
+                if len(self.bg_names) > TOOL_MEMORY:
+                    for key in list(self.bg_names)[: len(self.bg_names) - TOOL_MEMORY]:
+                        del self.bg_names[key]
 
     def _todos(self, items):
         items = [i for i in items if isinstance(i, dict)]
@@ -197,10 +208,13 @@ class ClaudeCollector:
             except (OSError, ValueError):
                 continue
             pid, sid = s.get("pid"), s.get("sessionId")
-            if not sid or not pid or not spool.pid_alive(pid):
+            # procStart guards against a dead session's PID now used by
+            # another process.
+            if not sid or not pid or not spool.same_process(pid, s.get("procStart")):
                 continue
             seen.add(sid)
             out.extend(self._session(s, now))
+        workers = _live_workers()
         for f in glob.glob(str(CLAUDE_DIR / "jobs" / "*" / "state.json")):
             try:
                 j = json.loads(Path(f).read_text())
@@ -208,8 +222,14 @@ class ClaudeCollector:
                 continue
             if j.get("sessionId") in seen:
                 continue
-            out.extend(self._job(j, now))
+            out.extend(self._job(j, now, workers))
+        self._prune(seen)
         return out
+
+    def _prune(self, seen):
+        """Forget the transcripts of sessions that ended (long runs)."""
+        for sid in [sid for sid in self.paths if sid not in seen]:
+            self.transcripts.pop(self.paths.pop(sid), None)
 
     def _session(self, s, now):
         sid = s["sessionId"]
@@ -305,13 +325,21 @@ class ClaudeCollector:
             )
         return out
 
-    def _job(self, j, now):
+    def _job(self, j, now, workers):
         state = str(j.get("state", "")).lower()
         updated = _ts(j.get("updatedAt"))
-        if state in ("done", "stopped", "failed", "error", "killed"):
+        detail = j.get("detail") or ""
+        ended = state in ("done", "stopped", "failed", "error", "killed")
+        keys = {j.get("daemonShort"), j.get("sessionId")} - {None, ""}
+        if not ended and not keys & workers and now - updated > JOB_GRACE:
+            # The daemon died (crash, logout, reboot) without updating
+            # state.json, which still says "working": the job is over.
+            state, ended = "gone", True
+            detail = f"daemon worker gone. {detail}".strip()
+        if ended:
             if now - updated > JOB_LINGER:
                 return []
-            mapped = "failed" if state in ("failed", "error", "killed") else "done"
+            mapped = "done" if state in ("done", "stopped") else "failed"
         elif state in ("blocked", "waiting", "needs_input"):
             mapped = "blocked"
         else:
@@ -322,7 +350,7 @@ class ClaudeCollector:
                 group="claude",
                 title=j.get("name") or j.get("intent", "")[:60] or "background job",
                 subtitle=f"background job · {_home(j.get('cwd'))} · {state}",
-                detail=j.get("detail") or "",
+                detail=detail,
                 percent=100.0 if mapped == "done" else None,
                 state=mapped,
                 started=_ts(j.get("createdAt")),
@@ -330,6 +358,22 @@ class ClaudeCollector:
                 icon="mm-agent-symbolic",
             )
         ]
+
+
+def _live_workers():
+    """Short ids and session ids of the jobs the Claude daemon runs now."""
+    try:
+        roster = json.loads((CLAUDE_DIR / "daemon" / "roster.json").read_text())
+        workers = roster.get("workers") or {}
+    except (OSError, ValueError, AttributeError):
+        return set()
+    live = set()
+    for short, w in workers.items():
+        if isinstance(w, dict) and w.get("pid") and spool.same_process(
+            w["pid"], w.get("procStart")
+        ):
+            live.update(k for k in (short, w.get("sessionId")) if k)
+    return live
 
 
 def _fmt_dur(sec):
