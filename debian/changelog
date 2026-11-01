@@ -1,3 +1,17 @@
+metamonitor (0.2.2) unstable; urgency=medium
+
+  * Finished tasks are cleared from the spool when the dashboard closes, and
+    every quarter of an hour once a session has run for more than an hour. The
+    close sweep takes every done or failed slot; the periodic one spares those
+    still on screen. A day of finished work no longer waits in the spool for a
+    collector to notice it.
+  * mmctl clear and the Clear action share that one sweep.
+  * Dead tasks no longer linger as ghosts: a slot's PID is matched against the
+    process start time, so a PID reused after a crash is not mistaken for the
+    task that wrote it.
+
+ -- Yann Chemin <dr.yann.chemin@gmail.com>  Sun, 01 Nov 2026 08:35:00 +0100
+
 metamonitor (0.2.1) unstable; urgency=medium
 
   * tests/shell/run_nested_shell.sh and "make shell-test": smoke test of the

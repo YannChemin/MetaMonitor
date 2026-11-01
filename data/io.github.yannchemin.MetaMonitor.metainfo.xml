@@ -34,6 +34,13 @@
     <color type="primary" scheme_preference="dark">#07080e</color>
   </branding>
   <releases>
+    <release version="0.2.2" date="2026-11-01">
+      <description>
+        <p>Finished tasks are cleared when the dashboard closes, and
+        periodically during a long session. Dead tasks no longer linger as
+        ghosts when a crashed job's PID is reused.</p>
+      </description>
+    </release>
     <release version="0.2.1" date="2026-10-12">
       <description>
         <p>Headless GNOME Shell test for the top-bar extension that no longer

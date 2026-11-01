@@ -17,7 +17,7 @@ the GPU.
 ## Install and run
 
 ```sh
-sudo apt install ./dist/metamonitor_0.2.1_amd64.deb   # or, per user:
+sudo apt install ./dist/metamonitor_0.2.2_amd64.deb   # or, per user:
 make install     # ~/.local, plus the ~/.bashrc and GRASS hooks
 metamonitor      # or "MetaMonitor" in the GNOME overview
 ```
